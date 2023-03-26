@@ -1,4 +1,4 @@
-mod benchmark;
+use algraphs::benchmark;
 
 fn main() {
     let joke = "My software never has bugs. It just develops random features.";
