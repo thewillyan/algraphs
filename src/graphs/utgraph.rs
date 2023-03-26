@@ -176,7 +176,6 @@ impl UTGraph {
 #[cfg(test)]
 pub mod test {
     use crate::models::GRAPHS;
-    use crate::benchmark;
     use super::UTGraph;
 
     #[test]
@@ -225,19 +224,5 @@ pub mod test {
 
         let path = graph.path(0, 6).expect("No path received.");
         assert!(*path.first().unwrap() == 0 && *path.last().unwrap() == 6);
-    }
-
-    #[test]
-    #[ignore]
-    fn bench() {
-        let model = &GRAPHS[5];
-        println!("Graph with {} vertices and {} edges...", model.verts, model.edges.len());
-
-        let graph = UTGraph::new(model.verts).edges(model.edges);
-
-        println!("{}", benchmark::med_exec_time(&|| graph.degree(6)).msg("Get degree"));
-        println!("{}", benchmark::med_exec_time(&|| graph.max_deg()).msg("Max degree"));
-        println!("{}", benchmark::med_exec_time(&|| graph.is_star()).msg("Is star"));
-        println!("{}", benchmark::med_exec_time(&|| graph.path(0,6)).msg("Path"));
     }
 }
