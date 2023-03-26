@@ -1,16 +1,6 @@
 pub struct GraphData {
-    verts: usize,
-    edges: &'static [(usize, usize)]
-}
-
-impl GraphData {
-    pub fn verts(&self) -> usize {
-        self.verts
-    }
-    
-    pub fn edges(&self) -> &[(usize, usize)] {
-        self.edges
-    }
+    pub verts: usize,
+    pub edges: &'static [(usize, usize)]
 }
 
 //    [2]
