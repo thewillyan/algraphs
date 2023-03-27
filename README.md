@@ -18,10 +18,23 @@ Performance comparisons of developed graph structures in some algorithms.
 |:--------|:----------:|:----------:|:-------:|:--------:|:---------------------------------------------:|
 | UTGraph |   2.5 ns   |   24.1 ns  |  2.8 ns | 679.2 ns | [@thewillyan](https://github.com/thewillyan/) |
 
+The algorithms are tested on the `GRAPH6` (provided by the `models` module) and
+has the following structure:
 
-Benchmark computer specifications:
+```
+     [0]     _[5]--[6]--[7]   [11]
+    / | \   /      / \
+ [1] [2] [3]     [8] [9]
+       \ /         \ /
+       [4]--------[10]
+```
 
-|  Field  |                       Spec                       |
+This graph is not ideal for performance benchmarks at all, it's just a
+placeholder for a more robust solution that is yet to be developed.
+
+### Benchmark computer specifications
+
+|   Spec  |                      Config                      |
 | :-----: | :----------------------------------------------- |
 |  Device | Thinkpad T430                                    |
 |   OS    | Void Linux  x86_64 (glibc)                       |
@@ -30,4 +43,3 @@ Benchmark computer specifications:
 |   GPU   | Intel 3rd Gen Core processor Graphics Controller |
 |   RAM   | 8G DDR3 1333MHz                                  |
 | Storage | KingSpec mSATA SSD 500G                          |
-
