@@ -1,4 +1,4 @@
-/// A symetric matrix.
+/// A symmetric matrix.
 pub struct SymMat<T> {
     size: usize,
     values: Vec<T>,
@@ -7,45 +7,51 @@ pub struct SymMat<T> {
 impl<T> SymMat<T> {
     /// Sum of integers from 1 to `end` (inclusive).
     fn int_sum(end: usize) -> usize {
-        (end * (end + 1))/2
+        (end * (end + 1)) / 2
     }
 
-    fn index(&self, a: usize, b: usize) -> usize {
+    /// Get the index where the element of line `i` column `j` is stored in
+    /// the matrix vector.
+    fn index(&self, i: usize, j: usize) -> usize {
         // The line must aways be <= col.
-        let (line, col) = if a > b {
-            (b, a)
-        } else {
-            (a, b)
-        };
+        let (line, col) = if i > j { (j, i) } else { (i, j) };
 
         let skip = Self::int_sum(line);
         (self.size * line + col) - skip
     }
 
-    pub fn get(&self, a: usize, b: usize) -> Option<&T> {
-        let conn_index = self.index(a, b);
+    /// Returns a reference to the element of the line `i` column `j` in the
+    /// matrix or `None` if out of bounds.
+    pub fn get(&self, i: usize, j: usize) -> Option<&T> {
+        let conn_index = self.index(i, j);
         self.values.get(conn_index)
     }
 
+    /// Returns a mutable reference to the element of the line `i` column `j`
+    /// in the matrix or `None` if out of bounds.
     pub fn get_mut(&mut self, a: usize, b: usize) -> Option<&mut T> {
         let conn_index = self.index(a, b);
         self.values.get_mut(conn_index)
     }
 
-    pub fn set(&mut self, line: usize, col: usize, value: T) {
-        let conn_index = self.index(line, col);
-        match self.values.get_mut(conn_index) {
+    /// Set the element of line `i` column `j` to the given `value`.
+    pub fn set(&mut self, i: usize, j: usize, value: T) {
+        let index = self.index(i, j);
+        match self.values.get_mut(index) {
             Some(r) => *r = value,
-            None => panic!("({}, {}) out of range.", line, col),
+            None => panic!("({}, {}) out of range.", i, j),
         }
     }
 
+    /// Get the matrix items as a slice of values.
     pub fn values(&self) -> &[T] {
         &self.values
     }
 }
 
 impl<T: Clone> SymMat<T> {
+    /// Creates a new symmetric matrix with `size` lines and columns filled with
+    /// the given `value`.
     pub fn fill(size: usize, value: T) -> Self {
         Self {
             size,
@@ -55,6 +61,8 @@ impl<T: Clone> SymMat<T> {
 }
 
 impl<T: Default + Clone> SymMat<T> {
+    /// Creates a new symmetric matrix with `size` lines and columns filled with
+    /// the default value of `T`.
     pub fn fill_default(size: usize) -> Self {
         Self {
             size,
@@ -63,7 +71,6 @@ impl<T: Default + Clone> SymMat<T> {
     }
 }
 
-
 /// Upper triangular graph.
 pub struct UTGraph {
     edges: usize,
@@ -71,6 +78,7 @@ pub struct UTGraph {
 }
 
 impl UTGraph {
+    /// Creates new graph with `verts` vertices.
     pub fn new(verts: usize) -> Self {
         Self {
             edges: 0,
@@ -78,19 +86,8 @@ impl UTGraph {
         }
     }
 
-    pub fn edges(mut self, edges: &[(usize, usize)]) -> Self {
-        for &(from, to) in edges {
-            self.connect(from, to);
-        }
-        self.edges = edges.len();
-        self
-    }
-
-    pub fn verts(&self) -> usize {
-        self.adj_mat.size
-    }
-
-    pub fn connect(&mut self, a: usize, b: usize) {
+    /// Connect the vertex 'a' to the vertex 'b'.
+    fn connect(&mut self, a: usize, b: usize) {
         if a == b {
             panic!("Cannot connect a vertice to itself.");
         } else if self.connected(a, b) {
@@ -101,14 +98,39 @@ impl UTGraph {
         *self.adj_mat.get_mut(b, b).unwrap() += 1;
     }
 
+    /// Add the given edges to the graph. An edge is represented by a tuple
+    /// of the form (a, b), which represents an edge from 'a' to 'b'.
+    pub fn with_edges(mut self, edges: &[(usize, usize)]) -> Self {
+        for &(from, to) in edges {
+            self.connect(from, to);
+        }
+        self.edges = edges.len();
+        self
+    }
+
+    /// Get the number of vertices of the graph.
+    pub fn verts(&self) -> usize {
+        self.adj_mat.size
+    }
+
+    /// Get the number of edges of the graph.
+    pub fn edges(&self) -> usize {
+        self.edges
+    }
+
+    /// Returns `true` if the vertex 'a' is connected to the vertex 'b' and
+    /// `false` otherwise.
     pub fn connected(&self, a: usize, b: usize) -> bool {
         a != b && *self.adj_mat.get(a, b).expect("Invalid edge.") == 1
     }
 
+    /// Returns the degree of the vertex 'a' or `None` if the vertex is out of
+    /// bounds.
     pub fn degree(&self, a: usize) -> Option<usize> {
         self.adj_mat.get(a, a).copied()
     }
 
+    /// Returns the maximum degree of the graph.
     pub fn max_deg(&self) -> usize {
         (0..self.verts())
             .map(|val| self.degree(val).unwrap())
@@ -116,6 +138,7 @@ impl UTGraph {
             .unwrap()
     }
 
+    /// Returns `true` if the graph is a star and `false` otherwise.
     pub fn is_star(&self) -> bool {
         let max_deg = self.verts() - 1;
         if self.edges != max_deg {
@@ -133,7 +156,7 @@ impl UTGraph {
         unreachable!()
     }
 
-    // Neighborood
+    /// Returns the neighborhood of 'a'.
     pub fn nbhd(&self, a: usize) -> Vec<usize> {
         let mut nbhd = Vec::new();
         for b in 0..self.verts() {
@@ -144,6 +167,7 @@ impl UTGraph {
         nbhd
     }
 
+    /// Returns a path from 'a' to 'b' or `None` if it is not possible.
     pub fn path(&self, a: usize, b: usize) -> Option<Vec<usize>> {
         let mut path_stack = vec![a];
         let mut blist = Vec::new();
@@ -161,7 +185,7 @@ impl UTGraph {
                 Some(&v) => {
                     path_stack.push(v);
                     curr_vert
-                },
+                }
                 None => path_stack.pop().unwrap(),
             };
 
@@ -175,19 +199,19 @@ impl UTGraph {
 
 #[cfg(test)]
 pub mod test {
-    use crate::models::GRAPHS;
     use super::UTGraph;
+    use crate::models::GRAPHS;
 
     #[test]
     fn test_deg() {
         let model = &GRAPHS[2];
-        let graph = UTGraph::new(model.verts).edges(model.edges);
+        let graph = UTGraph::new(model.verts).with_edges(model.edges);
         for v in 0..graph.verts() {
             assert!(graph.degree(v).unwrap() == 0)
         }
 
         let model = &GRAPHS[4];
-        let graph = UTGraph::new(model.verts).edges(model.edges);
+        let graph = UTGraph::new(model.verts).with_edges(model.edges);
         let degrees = [2, 2, 3, 1];
         for (v, deg) in degrees.iter().enumerate() {
             assert!(graph.degree(v).unwrap() == *deg);
@@ -198,7 +222,7 @@ pub mod test {
     fn test_max_deg() {
         let max_degrees = [2, 3, 0, 3, 3, 4];
         for (model, max_deg) in GRAPHS.iter().zip(max_degrees) {
-            let graph = UTGraph::new(model.verts).edges(model.edges);
+            let graph = UTGraph::new(model.verts).with_edges(model.edges);
             assert_eq!(max_deg, graph.max_deg())
         }
     }
@@ -206,7 +230,7 @@ pub mod test {
     #[test]
     fn test_is_star() {
         for (i, model) in GRAPHS.iter().enumerate() {
-            let graph = UTGraph::new(model.verts).edges(model.edges);
+            let graph = UTGraph::new(model.verts).with_edges(model.edges);
             if i == 0 || i == 3 {
                 assert!(graph.is_star());
             } else {
@@ -218,7 +242,7 @@ pub mod test {
     #[test]
     fn test_path() {
         let model = &GRAPHS[5];
-        let graph = UTGraph::new(model.verts).edges(model.edges);
+        let graph = UTGraph::new(model.verts).with_edges(model.edges);
 
         assert!(graph.path(0, 11).is_none());
 
